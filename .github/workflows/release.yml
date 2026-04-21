@@ -4,6 +4,11 @@ on:
   push:
     tags:
       - 'v*'
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version tag (e.g. 1.5.1)'
+        required: true
 
 jobs:
   release:
@@ -41,6 +46,7 @@ jobs:
             --artifacts-dir signed/
           # web-ext sign outputs a .xpi — rename it to something predictable
           VERSION="${GITHUB_REF_NAME#v}"
+          VERSION="${VERSION:-${{ inputs.version }}}"
           mv signed/*.xpi "builds/silverbullet-web-clipper-${VERSION}-firefox.xpi"
 
       - name: Create GitHub Release
