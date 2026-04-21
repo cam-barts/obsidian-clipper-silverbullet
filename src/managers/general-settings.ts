@@ -28,55 +28,111 @@ const STORE_URLS = {
 	edge: 'https://microsoftedge.microsoft.com/addons/detail/obsidian-web-clipper/eigdjhmgnaaeaonimdklocfekkaanfme'
 };
 
-export function updateVaultList(): void {
-	const vaultList = document.getElementById('vault-list') as HTMLUListElement;
-	if (!vaultList) return;
+// Stub retained so drag-and-drop.ts import doesn't break if any old reference remains
+export function updateVaultList(): void {}
 
-	// Clear existing vaults
-	vaultList.textContent = '';
-	generalSettings.vaults.forEach((vault, index) => {
-		const li = document.createElement('li');
-		li.dataset.index = index.toString();
-		li.draggable = true;
+export async function initializeServerSettings(): Promise<void> {
+	const urlInput = document.getElementById('server-url-input') as HTMLInputElement;
+	const authModeBasic = document.getElementById('auth-mode-basic') as HTMLInputElement;
+	const authModeBearer = document.getElementById('auth-mode-bearer') as HTMLInputElement;
+	const usernameInput = document.getElementById('server-username-input') as HTMLInputElement;
+	const passwordInput = document.getElementById('server-password-input') as HTMLInputElement;
+	const tokenInput = document.getElementById('server-token-input') as HTMLInputElement;
+	const basicFields = document.getElementById('basic-auth-fields');
+	const bearerFields = document.getElementById('bearer-auth-fields');
+	const testBtn = document.getElementById('test-connection-btn') as HTMLButtonElement;
+	const statusSpan = document.getElementById('connection-status');
+	const dailyNoteInput = document.getElementById('daily-note-path-input') as HTMLInputElement;
 
-		const dragHandle = createElementWithClass('div', 'drag-handle');
-		dragHandle.appendChild(createElementWithHTML('i', '', { 'data-lucide': 'grip-vertical' }));
-		li.appendChild(dragHandle);
+	if (!urlInput) return;
 
-		const span = document.createElement('span');
-		span.textContent = vault;
-		li.appendChild(span);
+	urlInput.value = generalSettings.serverUrl || '';
+	if (dailyNoteInput) dailyNoteInput.value = generalSettings.dailyNotePath || 'Journal/{date:YYYY-MM-DD}';
 
-		const removeBtn = createElementWithClass('button', 'setting-item-list-remove clickable-icon');
-		removeBtn.setAttribute('type', 'button');
-		removeBtn.setAttribute('aria-label', getMessage('removeVault'));
-		removeBtn.appendChild(createElementWithHTML('i', '', { 'data-lucide': 'trash-2' }));
-		li.appendChild(removeBtn);
+	const isBearer = generalSettings.serverAuthMode === 'bearer';
+	if (authModeBasic) authModeBasic.checked = !isBearer;
+	if (authModeBearer) authModeBearer.checked = isBearer;
+	if (basicFields) basicFields.style.display = isBearer ? 'none' : '';
+	if (bearerFields) bearerFields.style.display = isBearer ? '' : 'none';
 
-		li.addEventListener('dragstart', handleDragStart);
-		li.addEventListener('dragover', handleDragOver);
-		li.addEventListener('drop', handleDrop);
-		li.addEventListener('dragend', handleDragEnd);
-		removeBtn.addEventListener('click', (e) => {
-			e.stopPropagation();
-			removeVault(index);
+	if (generalSettings.serverAuth?.startsWith('Basic ')) {
+		try {
+			const decoded = atob(generalSettings.serverAuth.slice(6));
+			const colonIdx = decoded.indexOf(':');
+			if (usernameInput) usernameInput.value = decoded.slice(0, colonIdx);
+			if (passwordInput) passwordInput.value = decoded.slice(colonIdx + 1);
+		} catch {}
+	} else if (generalSettings.serverAuth?.startsWith('Bearer ')) {
+		if (tokenInput) tokenInput.value = generalSettings.serverAuth.slice(7);
+	}
+
+	const updateAuthMode = () => {
+		const bearer = authModeBearer?.checked;
+		if (basicFields) basicFields.style.display = bearer ? 'none' : '';
+		if (bearerFields) bearerFields.style.display = bearer ? '' : 'none';
+		persistServerSettings();
+	};
+
+	const persistServerSettings = debounce(() => {
+		const url = urlInput.value.replace(/\/+$/, '');
+		const bearer = authModeBearer?.checked;
+		let auth = '';
+		if (bearer) {
+			const token = tokenInput?.value?.trim();
+			if (token) auth = 'Bearer ' + token;
+		} else {
+			const user = usernameInput?.value?.trim();
+			const pass = passwordInput?.value || '';
+			if (user) auth = 'Basic ' + btoa(user + ':' + pass);
+		}
+		saveSettings({
+			serverUrl: url,
+			serverAuthMode: bearer ? 'bearer' : 'basic',
+			serverAuth: auth,
+			dailyNotePath: dailyNoteInput?.value || 'Journal/{date:YYYY-MM-DD}'
 		});
-		vaultList.appendChild(li);
+	}, 500);
+
+	authModeBasic?.addEventListener('change', updateAuthMode);
+	authModeBearer?.addEventListener('change', updateAuthMode);
+	urlInput.addEventListener('input', persistServerSettings);
+	usernameInput?.addEventListener('input', persistServerSettings);
+	passwordInput?.addEventListener('input', persistServerSettings);
+	tokenInput?.addEventListener('input', persistServerSettings);
+	dailyNoteInput?.addEventListener('input', persistServerSettings);
+
+	testBtn?.addEventListener('click', async () => {
+		if (!statusSpan) return;
+		statusSpan.textContent = 'Testing…';
+		const serverUrl = urlInput.value.replace(/\/+$/, '');
+		const bearer = authModeBearer?.checked;
+		let auth = '';
+		if (bearer) {
+			const token = tokenInput?.value?.trim();
+			if (token) auth = 'Bearer ' + token;
+		} else {
+			const user = usernameInput?.value?.trim();
+			const pass = passwordInput?.value || '';
+			if (user) auth = 'Basic ' + btoa(user + ':' + pass);
+		}
+		try {
+			const response: any = await browser.runtime.sendMessage({
+				action: 'fetchProxy',
+				url: serverUrl + '/.ping',
+				options: { method: 'GET', headers: auth ? { Authorization: auth } : {} }
+			});
+			if (response?.ok) {
+				statusSpan.textContent = '✓ Connected';
+				(statusSpan as HTMLElement).style.color = 'var(--text-success, green)';
+			} else {
+				statusSpan.textContent = '✗ ' + (response?.error || 'HTTP ' + response?.status);
+				(statusSpan as HTMLElement).style.color = 'var(--text-error, red)';
+			}
+		} catch (e: any) {
+			statusSpan.textContent = '✗ Network error';
+			(statusSpan as HTMLElement).style.color = 'var(--text-error, red)';
+		}
 	});
-
-	initializeIcons(vaultList);
-}
-
-export function addVault(vault: string): void {
-	generalSettings.vaults.push(vault);
-	saveSettings();
-	updateVaultList();
-}
-
-export function removeVault(index: number): void {
-	generalSettings.vaults.splice(index, 1);
-	saveSettings();
-	updateVaultList();
 }
 
 export async function setShortcutInstructions() {
@@ -212,11 +268,10 @@ export function initializeGeneralSettings(): void {
 		}
 
 		updateVaultList();
+		await initializeServerSettings();
 		initializeShowMoreActionsToggle();
 		initializeBetaFeaturesToggle();
-		initializeLegacyModeToggle();
 		initializeSilentOpenToggle();
-		initializeVaultInput();
 		initializeOpenBehaviorDropdown();
 		initializeKeyboardShortcuts();
 		initializeToggles();
@@ -251,7 +306,6 @@ function saveSettingsFromForm(): void {
 	const openBehaviorDropdown = document.getElementById('open-behavior-dropdown') as HTMLSelectElement;
 	const showMoreActionsToggle = document.getElementById('show-more-actions-toggle') as HTMLInputElement;
 	const betaFeaturesToggle = document.getElementById('beta-features-toggle') as HTMLInputElement;
-	const legacyModeToggle = document.getElementById('legacy-mode-toggle') as HTMLInputElement;
 	const silentOpenToggle = document.getElementById('silent-open-toggle') as HTMLInputElement;
 	const highlighterToggle = document.getElementById('highlighter-toggle') as HTMLInputElement;
 	const alwaysShowHighlightsToggle = document.getElementById('highlighter-visibility') as HTMLInputElement;
@@ -262,7 +316,6 @@ function saveSettingsFromForm(): void {
 		openBehavior: (openBehaviorDropdown?.value as Settings['openBehavior']) ?? generalSettings.openBehavior,
 		showMoreActionsButton: showMoreActionsToggle?.checked ?? generalSettings.showMoreActionsButton,
 		betaFeatures: betaFeaturesToggle?.checked ?? generalSettings.betaFeatures,
-		legacyMode: legacyModeToggle?.checked ?? generalSettings.legacyMode,
 		silentOpen: silentOpenToggle?.checked ?? generalSettings.silentOpen,
 		highlighterEnabled: highlighterToggle?.checked ?? generalSettings.highlighterEnabled,
 		alwaysShowHighlights: alwaysShowHighlightsToggle?.checked ?? generalSettings.alwaysShowHighlights,
@@ -278,21 +331,6 @@ function initializeShowMoreActionsToggle(): void {
 	});
 }
 
-function initializeVaultInput(): void {
-	const vaultInput = document.getElementById('vault-input') as HTMLInputElement;
-	if (vaultInput) {
-		vaultInput.addEventListener('keypress', (e) => {
-			if (e.key === 'Enter') {
-				e.preventDefault();
-				const newVault = vaultInput.value.trim();
-				if (newVault) {
-					addVault(newVault);
-					vaultInput.value = '';
-				}
-			}
-		});
-	}
-}
 
 async function initializeKeyboardShortcuts(): Promise<void> {
 	const shortcutsList = document.getElementById('keyboard-shortcuts-list');
@@ -332,11 +370,6 @@ function initializeBetaFeaturesToggle(): void {
 	});
 }
 
-function initializeLegacyModeToggle(): void {
-	initializeSettingToggle('legacy-mode-toggle', generalSettings.legacyMode, (checked) => {
-		saveSettings({ ...generalSettings, legacyMode: checked });
-	});
-}
 
 function initializeSilentOpenToggle(): void {
 	initializeSettingToggle('silent-open-toggle', generalSettings.silentOpen, (checked) => {
@@ -367,7 +400,7 @@ function initializeSaveBehaviorDropdown(): void {
 
     dropdown.value = generalSettings.saveBehavior;
     dropdown.addEventListener('change', () => {
-        const newValue = dropdown.value as 'addToObsidian' | 'copyToClipboard' | 'saveFile';
+        const newValue = dropdown.value as 'addToSilverBullet' | 'copyToClipboard' | 'saveFile';
         saveSettings({ saveBehavior: newValue });
     });
 }

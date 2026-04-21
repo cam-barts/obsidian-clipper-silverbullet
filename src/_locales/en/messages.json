@@ -17,11 +17,11 @@
 	"addProviderTitle": {
 		"message": "Add provider"
 	},
-	"addToObsidian": {
-		"message": "Add to Obsidian"
+	"addToSilverBullet": {
+		"message": "Add to SilverBullet"
 	},
 	"addVaultPlaceholder": {
-		"message": "Press enter to add a vault"
+		"message": "Enter your SilverBullet server URL"
 	},
 	"advanced": {
 		"message": "Advanced"
@@ -45,7 +45,7 @@
 		"message": "No API key"
 	},
 	"apiKeysWarning": {
-		"message": "By using an external provider you agree to their terms and privacy policy. Interpreter requests are sent directly to the provider you choose. Obsidian does not gather or store any data about your requests."
+		"message": "By using an external provider you agree to their terms and privacy policy. Interpreter requests are sent directly to the provider you choose. SilverBullet Clipper does not gather or store any data about your requests."
 	},
 	"appendToDaily": {
 		"message": "Add to daily note, at the bottom"
@@ -96,7 +96,7 @@
 		"message": "Clip behavior"
 	},
 	"clipBehaviorDescription": {
-		"message": "Choose how highlighted content is saved to Obsidian. Defines the $strong_start${{content}}$strong_end$ variable.",
+		"message": "Choose how highlighted content is saved to SilverBullet. Defines the $strong_start${{content}}$strong_end$ variable.",
 		"placeholders": {
 			"strong_end": {
 				"content": "</strong>"
@@ -107,7 +107,7 @@
 		}
 	},
 	"clipboardError": {
-		"message": "Obsidian is not able to access your clipboard. Try the troubleshooting instructions here: $1",
+		"message": "The extension is not able to access your clipboard. Try the troubleshooting instructions here: $1",
 		"placeholders": {
 			"1": {
 				"content": "$1"
@@ -118,7 +118,7 @@
 		"message": "Close"
 	},
 	"commandOpenClipper": {
-		"message": "Open Obsidian Clipper"
+		"message": "Open SilverBullet Clipper"
 	},
 	"commandQuickClip": {
 		"message": "Quick clip"
@@ -196,7 +196,7 @@
 		"message": "Duplicate"
 	},
 	"earlyAccessDescription": {
-		"message": "Use features that require the latest $link_start$early access version$link_end$ of Obsidian. Currently requires Obsidian 1.7.2 or later.",
+		"message": "Use beta features that may not be fully stable.",
 		"placeholders": {
 			"link_end": {
 				"content": "</a>"
@@ -225,7 +225,7 @@
 		"message": "Embedded"
 	},
 	"enableHighlighterDescription": {
-		"message": "Highlight content on web pages that you can save to Obsidian."
+		"message": "Highlight content on web pages that you can save to SilverBullet."
 	},
 	"enableInterpreter": {
 		"message": "Enable interpreter"
@@ -272,7 +272,7 @@
 		"message": "Export properties"
 	},
 	"exportPropertiesDescription": {
-		"message": "Save Web Clipper properties to a $strong_start$types.json$strong_end$ file that can be imported into your Obsidian vault, or into Web Clipper on other devices.",
+		"message": "Save Web Clipper properties to a $strong_start$types.json$strong_end$ file that can be imported into Web Clipper on other devices.",
 		"placeholders": {
 			"strong_end": {
 				"content": "</strong>"
@@ -283,10 +283,10 @@
 		}
 	},
 	"extensionDescription": {
-		"message": "Save content from the web in a private and durable format that you can access offline. The official browser extension for Obsidian."
+		"message": "Save and highlight web pages to your SilverBullet space."
 	},
 	"extensionName": {
-		"message": "Obsidian Web Clipper"
+		"message": "SilverBullet Web Clipper"
 	},
 	"failedToCopyText": {
 		"message": "Failed to copy text"
@@ -406,7 +406,7 @@
 		"message": "Import properties"
 	},
 	"importPropertiesDescription": {
-		"message": "To import your properties from Obsidian, locate the $strong_1_start$types.json$strong_1_end$ file in the $strong_2_start$.obsidian$strong_2_end$ folder within your vault. Note this folder is hidden by default on most operating systems.",
+		"message": "Import a $strong_1_start$types.json$strong_1_end$ properties file previously exported from Web Clipper.",
 		"placeholders": {
 			"strong_1_end": {
 				"content": "</strong>"
@@ -862,7 +862,7 @@
 		"message": "Remove all properties that are not used in any template."
 	},
 	"removeVault": {
-		"message": "Remove vault"
+		"message": "Remove server"
 	},
 	"replaceContent": {
 		"message": "Replace the page content"
@@ -955,7 +955,7 @@
 		"message": "Save clipped note without opening it"
 	},
 	"silentOpenDescription": {
-		"message": "Clipped notes will be saved but will not open as a new tab. Obsidian will still be brought to the foreground."
+		"message": "Clipped notes will be saved without opening in SilverBullet."
 	},
 	"sort": {
 		"message": "Sort"
@@ -1033,10 +1033,10 @@
 		"message": "You are using the latest version."
 	},
 	"vault": {
-		"message": "Vault"
+		"message": "Server"
 	},
 	"vaultDescription": {
-		"message": "Select the default vault for this template. Go to $link_start$general settings$link_end$ to add or remove vaults.",
+		"message": "Go to $link_start$general settings$link_end$ to configure your SilverBullet server.",
 		"placeholders": {
 			"link_end": {
 				"content": "</a>"
@@ -1047,18 +1047,10 @@
 		}
 	},
 	"vaults": {
-		"message": "Vaults"
+		"message": "Server"
 	},
 	"vaultsDescription": {
-		"message": "By default, clipped notes are saved to the currently open vault. You can add vaults here if you want the option to save to different vaults. Vault names must exactly match the name of the Obsidian vault. Press $strong_start$enter$strong_end$ to add a vault.",
-		"placeholders": {
-			"strong_end": {
-				"content": "</strong>"
-			},
-			"strong_start": {
-				"content": "<strong>"
-			}
-		}
+		"message": "Connect to your SilverBullet instance. Enter the full URL and authentication credentials."
 	},
 	"version": {
 		"message": "Version"

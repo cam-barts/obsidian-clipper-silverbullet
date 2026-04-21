@@ -7,7 +7,6 @@ export interface Template {
 	noteContentFormat: string;
 	properties: Property[];
 	triggers?: string[];
-	vault?: string;
 	context?: string;
 }
 
@@ -50,7 +49,7 @@ export interface Rating {
 	date: string;
 }
 
-export type SaveBehavior = 'addToObsidian' | 'saveFile' | 'copyToClipboard';
+export type SaveBehavior = 'addToSilverBullet' | 'saveFile' | 'copyToClipboard';
 
 export interface ReaderSettings {
 	fontSize: number;
@@ -71,10 +70,12 @@ export interface ReaderSettings {
 }
 
 export interface Settings {
-	vaults: string[];
+	serverUrl: string;
+	serverAuthMode: 'basic' | 'bearer';
+	serverAuth: string;
+	dailyNotePath: string;
 	showMoreActionsButton: boolean;
 	betaFeatures: boolean;
-	legacyMode: boolean;
 	silentOpen: boolean;
 	openBehavior: 'popup' | 'embedded' | 'reader';
 	highlighterEnabled: boolean;
@@ -89,14 +90,14 @@ export interface Settings {
 	propertyTypes: PropertyType[];
 	readerSettings: ReaderSettings;
 	stats: {
-		addToObsidian: number;
+		addToSilverBullet: number;
 		saveFile: number;
 		copyToClipboard: number;
 		share: number;
 	};
 	history: HistoryEntry[];
 	ratings: Rating[];
-	saveBehavior: 'addToObsidian' | 'saveFile' | 'copyToClipboard';
+	saveBehavior: 'addToSilverBullet' | 'saveFile' | 'copyToClipboard';
 }
 
 export interface ModelConfig {
@@ -110,9 +111,8 @@ export interface ModelConfig {
 export interface HistoryEntry {
 	datetime: string;
 	url: string;
-	action: 'addToObsidian' | 'saveFile' | 'copyToClipboard' | 'share';
+	action: 'addToSilverBullet' | 'saveFile' | 'copyToClipboard' | 'share';
 	title?: string;
-	vault?: string;
 	path?: string;
 }
 

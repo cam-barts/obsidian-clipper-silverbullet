@@ -219,23 +219,23 @@ export class Reader {
 		// Clip button with dropdown
 		const clipButton = doc.createElement('button');
 		clipButton.className = 'obsidian-reader-settings-trigger nav-btn';
-		clipButton.setAttribute('aria-label', getMessage('addToObsidian'));
+		clipButton.setAttribute('aria-label', getMessage('addToSilverBullet'));
 		clipButton.appendChild(this.createSVG({
 			width: '18', height: '18', viewBox: '0 0 24 24', strokeWidth: '1.75',
 			paths: ['m21.44 11.05-9.19 9.19a6 6 0 0 1-8.49-8.49l8.57-8.57A4 4 0 1 1 18 8.84l-8.59 8.57a2 2 0 0 1-2.83-2.83l8.49-8.48'],
 		}));
 
-		const addToObsidianBtn = doc.createElement('button');
-		addToObsidianBtn.className = 'nav-btn';
-		addToObsidianBtn.setAttribute('aria-label', getMessage('addToObsidian'));
+		const addToSilverBulletBtn = doc.createElement('button');
+		addToSilverBulletBtn.className = 'nav-btn';
+		addToSilverBulletBtn.setAttribute('aria-label', getMessage('addToSilverBullet'));
 		const obsidianIcon = doc.createElementNS('http://www.w3.org/2000/svg', 'svg');
 		obsidianIcon.setAttribute('width', '18');
 		obsidianIcon.setAttribute('height', '18');
 		obsidianIcon.setAttribute('viewBox', '0 0 256 256');
 		obsidianIcon.setAttribute('fill', 'currentColor');
 		obsidianIcon.innerHTML = '<path d="M94.82 149.44c6.53-1.94 17.13-4.9 29.26-5.71a102.97 102.97 0 0 1-7.64-48.84c1.63-16.51 7.54-30.38 13.25-42.1l3.47-7.14 4.48-9.18c2.35-5 4.08-9.38 4.9-13.56.81-4.07.81-7.64-.2-11.11-1.03-3.47-3.07-7.14-7.15-11.21a17.02 17.02 0 0 0-15.8 3.77l-52.81 47.5a17.12 17.12 0 0 0-5.5 10.2l-4.5 30.18a149.26 149.26 0 0 1 38.24 57.2ZM54.45 106l-1.02 3.06-27.94 62.2a17.33 17.33 0 0 0 3.27 18.96l43.94 45.16a88.7 88.7 0 0 0 8.97-88.5A139.47 139.47 0 0 0 54.45 106Z"/><path d="m82.9 240.79 2.34.2c8.26.2 22.33 1.02 33.64 3.06 9.28 1.73 27.73 6.83 42.82 11.21 11.52 3.47 23.45-5.8 25.08-17.73 1.23-8.67 3.57-18.46 7.75-27.53a94.81 94.81 0 0 0-25.9-40.99 56.48 56.48 0 0 0-29.56-13.35 96.55 96.55 0 0 0-40.99 4.79 98.89 98.89 0 0 1-15.29 80.34h.1Z"/><path d="M201.87 197.76a574.87 574.87 0 0 0 19.78-31.6 8.67 8.67 0 0 0-.61-9.48 185.58 185.58 0 0 1-21.82-35.9c-5.91-14.16-6.73-36.08-6.83-46.69 0-4.07-1.22-8.05-3.77-11.21l-34.16-43.33c0 1.94-.4 3.87-.81 5.81a76.42 76.42 0 0 1-5.71 15.9l-4.7 9.8-3.36 6.72a111.95 111.95 0 0 0-12.03 38.23 93.9 93.9 0 0 0 8.67 47.92 67.9 67.9 0 0 1 39.56 16.52 99.4 99.4 0 0 1 25.8 37.31Z"/>';
-		addToObsidianBtn.appendChild(obsidianIcon);
-		addToObsidianBtn.addEventListener('click', () => {
+		addToSilverBulletBtn.appendChild(obsidianIcon);
+		addToSilverBulletBtn.addEventListener('click', () => {
 			if (Reader.isReaderPage) {
 				Reader.toggleReaderPageIframe(doc);
 			} else {
@@ -326,7 +326,7 @@ export class Reader {
 		triggerGroup.appendChild(highlighterBtn);
 		triggerGroup.appendChild(clipButton);
 		triggerGroup.appendChild(trigger);
-		triggerGroup.appendChild(addToObsidianBtn);
+		triggerGroup.appendChild(addToSilverBulletBtn);
 		settingsBar.appendChild(triggerGroup);
 		settingsBar.appendChild(clipDropdown);
 
@@ -2441,7 +2441,7 @@ export class Reader {
 		const footer = doc.querySelector('.obsidian-reader-footer') as HTMLElement | null;
 		if (footer) {
 			const footerItems = [
-				'Obsidian Reader',
+				'SilverBullet Reader',
 				content.wordCount ? new Intl.NumberFormat().format(content.wordCount) + ' words' : '',
 				content.parseTime ? 'parsed in ' + new Intl.NumberFormat().format(content.parseTime) + ' ms' : '',
 			].filter(Boolean);

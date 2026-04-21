@@ -6,9 +6,11 @@ import { copyToClipboard } from 'core/popup';
 export type { Settings, ModelConfig, PropertyType, HistoryEntry, Provider, Rating };
 
 export let generalSettings: Settings = {
-	vaults: [],
+	serverUrl: '',
+	serverAuthMode: 'basic',
+	serverAuth: '',
+	dailyNotePath: 'Journal/{date:YYYY-MM-DD}',
 	betaFeatures: false,
-	legacyMode: false,
 	silentOpen: false,
 	openBehavior: 'popup',
 	highlighterEnabled: true,
@@ -40,14 +42,14 @@ export let generalSettings: Settings = {
 		customCss: ''
 	},
 	stats: {
-		addToObsidian: 0,
+		addToSilverBullet: 0,
 		saveFile: 0,
 		copyToClipboard: 0,
 		share: 0
 	},
 	history: [],
 	ratings: [],
-	saveBehavior: 'addToObsidian'
+	saveBehavior: 'addToSilverBullet'
 };
 
 export function setLocalStorage(key: string, value: any): Promise<void> {
@@ -62,10 +64,13 @@ interface StorageData {
 	general_settings?: {
 		showMoreActionsButton?: boolean;
 		betaFeatures?: boolean;
-		legacyMode?: boolean;
 		silentOpen?: boolean;
 		openBehavior?: boolean | 'popup' | 'embedded';
-		saveBehavior?: 'addToObsidian' | 'copyToClipboard' | 'saveFile';
+		saveBehavior?: 'addToSilverBullet' | 'copyToClipboard' | 'saveFile';
+		serverUrl?: string;
+		serverAuthMode?: 'basic' | 'bearer';
+		serverAuth?: string;
+		dailyNotePath?: string;
 	};
 	vaults?: string[];
 	highlighter_settings?: {
@@ -100,7 +105,7 @@ interface StorageData {
 	};
 	property_types?: PropertyType[];
 	stats?: {
-		addToObsidian: number;
+		addToSilverBullet: number;
 		saveFile: number;
 		copyToClipboard: number;
 		share: number;
@@ -110,17 +115,19 @@ interface StorageData {
 	migrationVersion?: number;
 }
 
-const CURRENT_MIGRATION_VERSION = 1;
+const CURRENT_MIGRATION_VERSION = 2;
 
 export async function loadSettings(): Promise<Settings> {
 	const data = await browser.storage.sync.get(null) as StorageData;
-	
+
 	// Load default settings first
 	const defaultSettings: Settings = {
-		vaults: [],
+		serverUrl: '',
+		serverAuthMode: 'basic',
+		serverAuth: '',
+		dailyNotePath: 'Journal/{date:YYYY-MM-DD}',
 		showMoreActionsButton: false,
 		betaFeatures: false,
-		legacyMode: false,
 		silentOpen: false,
 		openBehavior: 'popup',
 		highlighterEnabled: true,
@@ -133,7 +140,7 @@ export async function loadSettings(): Promise<Settings> {
 		interpreterAutoRun: false,
 		defaultPromptContext: '',
 		propertyTypes: [],
-		saveBehavior: 'addToObsidian',
+		saveBehavior: 'addToSilverBullet',
 		readerSettings: {
 			fontSize: 16,
 			lineHeight: 1.6,
@@ -152,7 +159,7 @@ export async function loadSettings(): Promise<Settings> {
 			customCss: ''
 		},
 		stats: {
-			addToObsidian: 0,
+			addToSilverBullet: 0,
 			saveFile: 0,
 			copyToClipboard: 0,
 			share: 0
@@ -161,30 +168,48 @@ export async function loadSettings(): Promise<Settings> {
 		ratings: [],
 	};
 
-	// Update migration version if needed
+	// Run migrations if needed
 	if (!data.migrationVersion || data.migrationVersion < CURRENT_MIGRATION_VERSION) {
+		if (!data.migrationVersion || data.migrationVersion < 2) {
+			// Migration 2: drop legacy vaults key, seed server defaults
+			await browser.storage.sync.remove('vaults');
+			debugLog('Settings', 'Migration 2: removed vaults key');
+		}
 		await browser.storage.sync.set({ migrationVersion: CURRENT_MIGRATION_VERSION });
 		debugLog('Settings', `Updated migration version to ${CURRENT_MIGRATION_VERSION}`);
 	}
 
-	// Validate and sanitize data to prevent corruption
-	const sanitizedVaults = Array.isArray(data.vaults) ? data.vaults.filter(v => typeof v === 'string') : [];
-	const sanitizedModels = Array.isArray(data.interpreter_settings?.models) 
-		? data.interpreter_settings.models.filter(m => m && typeof m === 'object' && typeof m.id === 'string') 
+	const sanitizedModels = Array.isArray(data.interpreter_settings?.models)
+		? data.interpreter_settings.models.filter(m => m && typeof m === 'object' && typeof m.id === 'string')
 		: [];
-	const sanitizedProviders = Array.isArray(data.interpreter_settings?.providers) 
-		? data.interpreter_settings.providers.filter(p => p && typeof p === 'object' && typeof p.id === 'string') 
+	const sanitizedProviders = Array.isArray(data.interpreter_settings?.providers)
+		? data.interpreter_settings.providers.filter(p => p && typeof p === 'object' && typeof p.id === 'string')
 		: [];
+
+	// Migrate addToObsidian stat to addToSilverBullet if present
+	const rawStats = data.stats as any;
+	const migratedStats = {
+		addToSilverBullet: rawStats?.addToSilverBullet ?? rawStats?.addToObsidian ?? 0,
+		saveFile: rawStats?.saveFile ?? 0,
+		copyToClipboard: rawStats?.copyToClipboard ?? 0,
+		share: rawStats?.share ?? 0
+	};
+
+	// Migrate saveBehavior 'addToObsidian' → 'addToSilverBullet'
+	let rawSaveBehavior = data.general_settings?.saveBehavior as string | undefined;
+	if (rawSaveBehavior === 'addToObsidian') rawSaveBehavior = 'addToSilverBullet';
 
 	// Load user settings
 	const loadedSettings: Settings = {
-		vaults: sanitizedVaults.length > 0 ? sanitizedVaults : defaultSettings.vaults,
+		serverUrl: data.general_settings?.serverUrl ?? defaultSettings.serverUrl,
+		serverAuthMode: data.general_settings?.serverAuthMode ?? defaultSettings.serverAuthMode,
+		serverAuth: data.general_settings?.serverAuth ?? defaultSettings.serverAuth,
+		dailyNotePath: data.general_settings?.dailyNotePath ?? defaultSettings.dailyNotePath,
 		showMoreActionsButton: data.general_settings?.showMoreActionsButton ?? defaultSettings.showMoreActionsButton,
 		betaFeatures: data.general_settings?.betaFeatures ?? defaultSettings.betaFeatures,
-		legacyMode: data.general_settings?.legacyMode ?? defaultSettings.legacyMode,
 		silentOpen: data.general_settings?.silentOpen ?? defaultSettings.silentOpen,
-		openBehavior: typeof data.general_settings?.openBehavior === 'boolean' 
-			? (data.general_settings.openBehavior ? 'embedded' : 'popup') 
+		openBehavior: typeof data.general_settings?.openBehavior === 'boolean'
+			? (data.general_settings.openBehavior ? 'embedded' : 'popup')
 			: (data.general_settings?.openBehavior ?? defaultSettings.openBehavior),
 		highlighterEnabled: data.highlighter_settings?.highlighterEnabled ?? defaultSettings.highlighterEnabled,
 		alwaysShowHighlights: data.highlighter_settings?.alwaysShowHighlights ?? defaultSettings.alwaysShowHighlights,
@@ -213,10 +238,10 @@ export async function loadSettings(): Promise<Settings> {
 			highlightActiveLine: data.reader_settings?.highlightActiveLine ?? defaultSettings.readerSettings.highlightActiveLine,
 			customCss: data.reader_settings?.customCss ?? defaultSettings.readerSettings.customCss
 		},
-		stats: data.stats || defaultSettings.stats,
+		stats: migratedStats,
 		history: data.history || defaultSettings.history,
 		ratings: data.ratings || defaultSettings.ratings,
-		saveBehavior: data.general_settings?.saveBehavior ?? defaultSettings.saveBehavior
+		saveBehavior: (rawSaveBehavior as Settings['saveBehavior']) ?? defaultSettings.saveBehavior
 	};
 
 	generalSettings = loadedSettings;
@@ -230,14 +255,16 @@ export async function saveSettings(settings?: Partial<Settings>): Promise<void> 
 	}
 
 	await browser.storage.sync.set({
-		vaults: generalSettings.vaults,
 		general_settings: {
 			showMoreActionsButton: generalSettings.showMoreActionsButton,
 			betaFeatures: generalSettings.betaFeatures,
-			legacyMode: generalSettings.legacyMode,
 			silentOpen: generalSettings.silentOpen,
 			openBehavior: generalSettings.openBehavior,
 			saveBehavior: generalSettings.saveBehavior,
+			serverUrl: generalSettings.serverUrl,
+			serverAuthMode: generalSettings.serverAuthMode,
+			serverAuth: generalSettings.serverAuth,
+			dailyNotePath: generalSettings.dailyNotePath,
 		},
 		highlighter_settings: {
 			highlighterEnabled: generalSettings.highlighterEnabled,
@@ -274,14 +301,8 @@ export async function saveSettings(settings?: Partial<Settings>): Promise<void> 
 	});
 }
 
-export async function setLegacyMode(enabled: boolean): Promise<void> {
-	await saveSettings({ legacyMode: enabled });
-	console.log(`Legacy mode ${enabled ? 'enabled' : 'disabled'}`);
-}
-
 export async function incrementStat(
 	action: keyof Settings['stats'],
-	vault?: string,
 	path?: string,
 	url?: string,
 	title?: string
@@ -292,15 +313,14 @@ export async function incrementStat(
 
 	// Add history entry if URL is provided
 	if (url) {
-		await addHistoryEntry(action, url, title, vault, path);
+		await addHistoryEntry(action, url, title, path);
 	}
 }
 
 export async function addHistoryEntry(
-	action: keyof Settings['stats'], 
-	url: string, 
+	action: keyof Settings['stats'],
+	url: string,
 	title?: string,
-	vault?: string,
 	path?: string
 ): Promise<void> {
 	const entry: HistoryEntry = {
@@ -308,7 +328,6 @@ export async function addHistoryEntry(
 		url,
 		action,
 		title,
-		vault,
 		path
 	};
 

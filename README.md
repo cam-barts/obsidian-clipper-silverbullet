@@ -1,104 +1,93 @@
-Obsidian Web Clipper helps you highlight and capture the web in your favorite browser. Anything you save is stored as durable Markdown files that you can read offline, and preserve for the long term.
+# SilverBullet Web Clipper
 
-- **[Download Web Clipper](https://obsidian.md/clipper)**
-- **[Documentation](https://help.obsidian.md/web-clipper)**
-- **[Troubleshooting](https://help.obsidian.md/web-clipper/troubleshoot)**
+A browser extension for clipping web content directly into [SilverBullet](https://silverbullet.md). Highlight and capture pages, save them as Markdown notes via SilverBullet's HTTP API, and use powerful templates and variables to control exactly what gets saved.
 
-## Get started
+## Installation
 
-Install the extension by downloading it from the official directory for your browser:
+Download the latest signed extension from the [Releases](../../releases) page:
 
-- **[Chrome Web Store](https://chromewebstore.google.com/detail/obsidian-web-clipper/cnjifjpddelmedmihgijeibhnjfabmlf)** for Chrome, Brave, Arc, Orion, and other Chromium-based browsers.
-- **[Firefox Add-Ons](https://addons.mozilla.org/en-US/firefox/addon/web-clipper-obsidian/)** for Firefox and Firefox Mobile.
-- **[Safari Extensions](https://apps.apple.com/us/app/obsidian-web-clipper/id6720708363)** for macOS, iOS, and iPadOS.
-- **[Edge Add-Ons](https://microsoftedge.microsoft.com/addons/detail/obsidian-web-clipper/eigdjhmgnaaeaonimdklocfekkaanfme)** for Microsoft Edge.
+- **Firefox** — install the `.xpi` file directly via `about:addons` → gear icon → **Install Add-on From File**
+- **Chrome / Brave / Edge / Arc** — unzip the `.zip` and load unpacked via `chrome://extensions` → **Load unpacked**
 
-## Use the extension
+## Setup
 
-Documentation is available on the [Obsidian Help site](https://help.obsidian.md/web-clipper), which covers how to use [highlighting](https://help.obsidian.md/web-clipper/highlight), [templates](https://help.obsidian.md/web-clipper/templates), [variables](https://help.obsidian.md/web-clipper/variables), [filters](https://help.obsidian.md/web-clipper/filters), and more.
+1. Open the extension settings (gear icon in the popup)
+2. Under **Server**, enter your SilverBullet instance URL (e.g. `https://bullet.example.com`)
+3. Choose **Username & password** or **Bearer token** and enter your credentials
+4. Click **Test** to verify the connection
+5. Optionally set a **Daily note path** template (default: `Journal/{date:YYYY-MM-DD}`)
 
-## Contribute
+Clipped notes are saved to `Inbox/` by default. You can change the path and behavior per template.
 
-### Translations
+## Features
 
-You can help translate Web Clipper into your language. Submit your translation via pull request using the format found in the [/_locales](/src/_locales) folder.
+Inherited from the upstream Obsidian Web Clipper and adapted for SilverBullet:
 
-### Features and bug fixes
+- Clip web pages as Markdown notes via `PUT /.fs/<path>.md`
+- Create, append, prepend, overwrite, or append/prepend to daily notes
+- Reader mode for distraction-free reading before clipping
+- Highlighter mode — annotate pages before saving
+- Template system with variables, filters, and triggers
+- Interpreter — use AI to extract structured data from pages
 
-See the [help wanted](https://github.com/obsidianmd/obsidian-clipper/issues?q=is%3Aissue+is%3Aopen+label%3A%22help+wanted%22) tag for issues where contributions are welcome.
+## Attribution
 
-## Roadmap
+Built for [SilverBullet](https://silverbullet.md), created by [Zef Hemel](https://github.com/zefhemel).
 
-In no particular order:
+This is a vibe-coded fork of [obsidian-clipper](https://github.com/obsidianmd/obsidian-clipper) by [Obsidian](https://obsidian.md), used under the [MIT License](LICENSE). The core content extraction, template compiler, reader mode, highlighter, and filter system are unchanged from upstream. This fork replaces the Obsidian URI save mechanism with direct HTTP calls to SilverBullet's REST API and removes the CLI, API, and Safari targets.
 
-- [ ] A separate icon for Web Clipper
-- [ ] Annotate highlights
-- [ ] Template directory
-- [x] Template validation
-- [x] Template logic (if/for)
-- [x] Save images locally, [added in Obsidian 1.8.0](https://obsidian.md/changelog/2024-12-18-desktop-v1.8.0/)
-- [x] Translate UI into more languages — help is welcomed
+Upstream changes are periodically merged from `obsidianmd/obsidian-clipper:main`.
+
+
+Most of this project was vibe coded with [Claude Opus 4.6](https://docs.anthropic.com/en/docs/about-claude/models) via [Claude Code](https://docs.anthropic.com/en/docs/claude-code) to meet one person's specific requirements (mine).
+Credit to the enormous body of open source software the models were trained on, this project wouldn't exist without it.
 
 ## Developers
 
-To build the extension:
+### Build
 
 ```
-npm run build
+npm install
+npm run build          # builds both Chrome and Firefox
+npm run build:chrome   # Chrome only → dist/chrome/
+npm run build:firefox  # Firefox only → dist/firefox/
 ```
 
-This will create three directories:
-- `dist/` for the Chromium version
-- `dist_firefox/` for the Firefox version
-- `dist_safari/` for the Safari version
+Built zips land in `builds/`.
 
-### Install the extension locally
+### Install locally
 
-For Chromium browsers, such as Chrome, Brave, Edge, and Arc:
+**Firefox:**
+1. `about:debugging` → **This Firefox** → **Load Temporary Add-on**
+2. Select `dist/firefox/manifest.json`
 
-1. Open your browser and navigate to `chrome://extensions`
-2. Enable **Developer mode**
-3. Click **Load unpacked** and select the `dist` directory
-
-For Firefox:
-
-1. Open Firefox and navigate to `about:debugging#/runtime/this-firefox`
-2. Click **Load Temporary Add-on**
-3. Navigate to the `dist_firefox` directory and select the `manifest.json` file
-
-If you want to run the extension permanently you can do so with the Nightly or Developer versions of Firefox.
-
-1. Type `about:config` in the URL bar
-2. In the Search box type `xpinstall.signatures.required`
-3. Double-click the preference, or right-click and select "Toggle", to set it to `false`.
-4. Go to `about:addons` > gear icon > **Install Add-on From File…**
-
-For iOS Simulator testing on macOS:
-
-1. Run `npm run build` to build the extension
-2. Open `xcode/Obsidian Web Clipper/Obsidian Web Clipper.xcodeproj` in Xcode
-3. Select the **Obsidian Web Clipper (iOS)** scheme from the scheme selector
-4. Choose an iOS Simulator device and click **Run** to build and launch the app
-5. Once the app is running on the simulator, open **Safari**
-6. Navigate to a webpage and tap the **Extensions** button in Safari to access the Web Clipper extension
+**Chrome/Brave/Edge:**
+1. `chrome://extensions` → enable **Developer mode**
+2. **Load unpacked** → select `dist/chrome/`
 
 ### Run tests
 
 ```
 npm test
-```
-
-Or run in watch mode during development:
-
-```
 npm run test:watch
 ```
 
+### Release
+
+Push a version tag to trigger the release workflow:
+
+```
+git tag v1.5.2
+git push origin v1.5.2
+```
+
+The workflow builds both targets, signs the Firefox extension via AMO, and publishes a GitHub Release with both artifacts. Requires `AMO_API_KEY` and `AMO_API_SECRET` secrets set in the repository settings.
+
 ## Third-party libraries
 
-- [webextension-polyfill](https://github.com/mozilla/webextension-polyfill) for browser compatibility
-- [defuddle](https://github.com/kepano/defuddle) for content extraction and Markdown conversion
-- [dayjs](https://github.com/iamkun/dayjs) for date parsing and formatting
-- [lz-string](https://github.com/pieroxy/lz-string) to compress templates to reduce storage space
-- [lucide](https://github.com/lucide-icons/lucide) for icons
-- [dompurify](https://github.com/cure53/DOMPurify) for sanitizing HTML
+- [webextension-polyfill](https://github.com/mozilla/webextension-polyfill) — browser compatibility
+- [defuddle](https://github.com/kepano/defuddle) — content extraction and Markdown conversion
+- [dayjs](https://github.com/iamkun/dayjs) — date parsing and formatting
+- [lz-string](https://github.com/pieroxy/lz-string) — template compression
+- [lucide](https://github.com/lucide-icons/lucide) — icons
+- [dompurify](https://github.com/cure53/DOMPurify) — HTML sanitization

@@ -1,36 +1,24 @@
 {
-	"name": "obsidian-clipper",
+	"name": "silverbullet-clipper",
 	"version": "1.5.1",
-	"description": "Official web clipper for Obsidian.",
-	"bin": {
-		"obsidian-clipper": "./dist/cli.cjs"
-	},
+	"description": "Web clipper for SilverBullet.",
 	"files": [
 		"dist"
 	],
-	"exports": {
-		".": "./dist/cli.cjs",
-		"./api": "./dist/api.mjs"
-	},
 	"scripts": {
 		"defuddle-dev": "node scripts/set-defuddle-dev.js",
 		"defuddle-prod": "node scripts/set-defuddle-prod.js",
 		"dev:chrome": "webpack --watch --env BROWSER=chrome --mode development",
 		"dev:firefox": "webpack --watch --env BROWSER=firefox --mode development",
-		"dev:safari": "webpack --watch --env BROWSER=safari --mode development",
 		"build:chrome": "webpack --env BROWSER=chrome --mode production",
 		"build:firefox": "webpack --env BROWSER=firefox --mode production",
-		"build:safari": "webpack --env BROWSER=safari --mode production",
-		"build": "npm run build:chrome && npm run build:firefox && npm run build:safari",
-		"build:cli": "node scripts/build-cli.mjs",
-		"build:api": "node scripts/build-api.mjs",
+		"build": "npm run build:chrome && npm run build:firefox",
 		"dev": "npm run dev:chrome",
 		"test": "vitest run",
 		"test:watch": "vitest",
 		"update-locales": "ts-node --project scripts/tsconfig.json scripts/update-locales.ts",
 		"check-strings": "ts-node --project scripts/tsconfig.json scripts/check-unused-strings.ts",
-		"add-locale": "ts-node --project scripts/tsconfig.json scripts/add-locale.ts",
-		"prepublishOnly": "npm run build:cli && npm run build:api"
+		"add-locale": "ts-node --project scripts/tsconfig.json scripts/add-locale.ts"
 	},
 	"devDependencies": {
 		"@types/chrome": "^0.0.270",
