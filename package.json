@@ -1,6 +1,6 @@
 {
 	"name": "silverbullet-clipper",
-	"version": "1.5.2",
+	"version": "1.6.1",
 	"description": "Web clipper for SilverBullet.",
 	"files": [
 		"dist"
@@ -45,7 +45,7 @@
 	"dependencies": {
 		"@types/safari-extension": "^0.0.33",
 		"dayjs": "^1.11.13",
-		"defuddle": "^0.17.0",
+		"defuddle": "^0.18.1",
 		"dompurify": "^3.0.9",
 		"highlight.js": "^11.11.1",
 		"linkedom": "^0.18.0",

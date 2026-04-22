@@ -3,7 +3,7 @@
 	"default_locale": "en",
 	"name": "SilverBullet Web Clipper",
 	"homepage_url": "https://silverbullet.md/",
-	"version": "1.5.2",
+	"version": "1.6.1",
 	"description": "Save and highlight web pages to SilverBullet.",
 	"permissions": [
 		"activeTab",
